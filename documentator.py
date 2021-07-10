@@ -34,7 +34,7 @@ class Package:
             table = ["Input", "Description", "example"]
             for input in command["form"]["inputs"]:
                 table.extend([
-                    self.get_attribute(input, "title", lang),
+                    self.get_attribute(input, "title", lang).replace(":", ""),
                     "add description here",
                     self.get_attribute(input, "placeholder", lang),
                 ])
