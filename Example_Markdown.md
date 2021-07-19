@@ -3,7 +3,7 @@ Outlook365
 ==========
 Módulo para realizar acciones en Outlook Office 365  
 
-# Commands
+# Overview
 
 ## Configurar Servidor
 Configurar Servidor
@@ -122,3 +122,17 @@ Cierra la conexión del servidor
 
 |Input|Description|example|
 | :---: | :---: | :---: |
+
+## OS
+
+- windows
+- mac
+- linux
+- docker
+
+### Dependencies
+- [**mail-parser**](https://pypi.org/project/mail-parser/)
+### License
+  
+![MIT](https://camo.githubusercontent.com/107590fac8cbd65071396bb4d04040f76cde5bde/687474703a2f2f696d672e736869656c64732e696f2f3a6c6963656e73652d6d69742d626c75652e7376673f7374796c653d666c61742d737175617265)  
+[MIT](http://opensource.org/licenses/mit-license.ph)
