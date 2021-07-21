@@ -1,129 +1,40 @@
 
-Outlook365
-==========
-Módulo para realizar acciones en Outlook Office 365  
+# XML
+  
+Open XML files to get data.  
 
-# Overview
+## Overview
 
-## Configurar Servidor
-Configurar Servidor
-### inputs
 
-|Input|Description|example|
-| :---: | :---: | :---: |
-|User|add description here|user@example.com|
-|Timeout|add description here|99|
-|Contraseña|add description here|******|
-|Asignar resultado a variable|add description here|Variable|
+>The XML command supports sessions and node editing, based on a tree structure of an XML document.
 
-## Enviar Email
-Envia un email, previamente debe configurar el servidor
-### inputs
+The XML command 
+enables users to capture data that has XML formatting and save it to a specified location.
 
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Para|add description here|to@mail.com, to2@mail.com|
-|Copia|add description here|cc@mail.com, cc2@mail.com|
-|Asunto|add description here|Nuevo mail|
-|Mensaje|add description here|Esto es una prueba|
-|Archivo Adjunto|add description here|C:\User\Desktop\test.txt|
-|Carpeta (Varios archivos)|add description here|C:\User\Desktop\Files|
+1. #### Load XML File  
+Load XML File  
+![xmlsession](example/xmlsession.png)
 
-## Lista todos los email
-Lista todos los email, se puede especificar un filtro
-### inputs
+2. #### End XML Session  
+Complements the **Start XML Session** operation by closing an open XML session - Clean memory.
 
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Filtro|add description here|SUBJECT "COMPRA*"|
-|Carpeta|add description here|345|
-|Asignar a variable|add description here|Variable|
+3. #### Get Node  
+Obtain node data
 
-## Lista emails no leídos
-Lista emails no leídos
-### inputs
+4. #### Delete Node  
+Delete node by XPath
 
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Filtro|add description here|SUBJECT "COMPRA*"|
-|Carpeta|add description here|inbox|
-|Asignar a variable|add description here|Variable|
+5. #### Insert Node  
+Insert node on XML
 
-## Leer email por ID
-Leer email por ID
-### inputs
+6. #### Update Node  
+Update node on XML
 
-|Input|Description|example|
-| :---: | :---: | :---: |
-|ID del email|add description here|345|
-|Carpeta|add description here|inbox|
-|Asignar a variable|add description here|Variable|
-|Ruta para descargar adjuntos|add description here|C:\User\Desktop|
+7. #### Save XML File  
+Save XML File
 
-## Crear Carpeta
-Crea una carpeta
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Nombre Carpeta|add description here|Ingrese nombre de la carpeta|
-
-## Mover email a carpeta
-Mueve email a carpeta
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|ID del email|add description here|Ingrese ID del email|
-|Carpeta de destino|add description here|test|
-|Nombre de la carpeta de origen|add description here|test|
-|Asignar resultado a variable|add description here|Variable|
-
-## Responder email por ID
-Responder email por ID
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|ID Email|add description here|355|
-|Carpeta del mail a responder|add description here|inbox|
-|Mensaje|add description here|Esto es una prueba|
-|Archivo Adjunto|add description here|C:\User\Desktop\test.txt|
-
-## Reenviar email por ID
-Reenviar email por ID
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|ID Email|add description here|355|
-|Email|add description here|test@email.com|
-
-## Listar Carpetas
-Devuelve todas las carpetas
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Asignar resultado a variable|add description here|Variable|
-
-## Marcar email como no leído
-Marcar email como no leído
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-|Nombre Carpeta|add description here|inbox|
-|ID del email|add description here|Ingrese ID del email|
-
-## Cerrar Conexión
-Cierra la conexión del servidor
-### inputs
-
-|Input|Description|example|
-| :---: | :---: | :---: |
-
-## OS
+----
+### OS
 
 - windows
 - mac
@@ -131,7 +42,7 @@ Cierra la conexión del servidor
 - docker
 
 ### Dependencies
-- [**mail-parser**](https://pypi.org/project/mail-parser/)
+- [**beautifulsoup4**](https://pypi.org/project/beautifulsoup4/)
 ### License
   
 ![MIT](https://camo.githubusercontent.com/107590fac8cbd65071396bb4d04040f76cde5bde/687474703a2f2f696d672e736869656c64732e696f2f3a6c6963656e73652d6d69742d626c75652e7376673f7374796c653d666c61742d737175617265)  
