@@ -16,7 +16,7 @@ To use this script, you need to have the following parameters in the package.jso
 - Each input must have the description field
 - If you have add a banner in the manual, it's necessary to have a img folder in the docs folder. The name of banner must be "Banner_modulename.jpg"
 
-
+In the manual file, it's necessary to change the 'How to use' description. Automatically add a lorem ipsum
 
 ### OS
 
