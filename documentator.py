@@ -54,10 +54,12 @@ class Package:
             self.dependencies[name] = url
         
     def get_attribute(self, object, name, lang="en"):
+        
         if lang in object:
             return object[lang][name] if name in object[lang] else ""
         if name in object and isinstance(object[name], dict):
-            return object[name][lang] if lang in object[name] else object[name]["en"]
+            if lang in object[name]:
+                return object[name][lang]
         if name in object:
             return object[name]
         return ""
@@ -162,7 +164,7 @@ class Documentator:
             path_to_save = self.create_docs_path()
 
         if not banner_path:
-            banner_path = f"img/Banner_{self.name}.jpg"
+            banner_path = "https://raw.githubusercontent.com/rocketbot-cl/{name}/master/docs/imgs/Banner_{name}.png".format(name=self.name)
 
         md_file = self.create_md_base(path_to_save, lang, banner_path)
         md_file.new_header(level=2, title=LANGUAGE["overview_"+self.package.get_component_type()][lang])
@@ -176,7 +178,7 @@ class Documentator:
                 table.extend([
                     self.package.get_attribute(input, "title", lang).replace(":", ""),
                     self.package.get_attribute(input, "description", lang).replace(":", ""),
-                    self.package.get_attribute(input, "placeholder", lang)[:],
+                    self.package.get_attribute(input, "placeholder", lang),
                 ])
             md_file.new_table(columns=3, rows=len(table)//3, text=table, text_align=None)
             self.add_command_image(md_file, command["module"], "docs")
