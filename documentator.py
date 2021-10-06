@@ -1,6 +1,7 @@
 import json
 import os
 from mdutils.mdutils import MdUtils
+import git
 
 
 LICENSES = {
@@ -116,6 +117,8 @@ class Documentator:
             md_file.new_paragraph(f"{i}. {title}")
             md_file.new_line(description)
         
+        md_file.new_header(level=3, title="Updates")
+        self.add_updates(md_file)
         md_file.new_paragraph("----")
         md_file.new_header(level=3, title="OS")
         md_file.new_list(self.package.os)
@@ -125,6 +128,16 @@ class Documentator:
         md_file.new_header(level=3, title="License")
         self.add_license(md_file, self.package.license)
         md_file.create_md_file()
+
+    def add_updates(self, md: MdUtils)->None:
+        changes_file = self.path + "/CHANGES.txt"
+        if os.path.exists(changes_file):
+            versions = {}
+            with open(changes_file, 'r') as f:
+                for line in f.readlines():
+                    version = line.split(",")[0]
+                    if version not in versions:
+                        print(version)
 
     def add_description_module(self, md: MdUtils, description: str, lang: str)->None:
         if "|" not in description:
@@ -192,8 +205,23 @@ class Documentator:
         return os.path.join(docs_folder, f"Manual_{self.name}")
         
         
+class Module:
 
+    def __init__(self, path):
+        self.path = path
+        self.create_logs()
 
+    def create_logs(self):
+        import re
+        repo = git.Git(self.path)
+        log_info = repo.log("--invert-grep", "--grep='hidden'", "--graph", "--all", "--date=local", "--pretty=format:'%ad %d %s'")
+        matches = re.findall(r"\w{3} \w{3} \d\d? \d\d?:\d{2}:\d{2} \d{4}  \[.*]\s?.*",log_info, re.MULTILINE)
+        lines = "\n".join(matches)
+        
+        with open(self.path + "/CHANGES.txt", "w") as f:
+            f.write(lines)
+        
+        
 if __name__ == '__main__':
 
     from tkinter import filedialog
@@ -201,7 +229,8 @@ if __name__ == '__main__':
 
 
     folder = filedialog.askdirectory()
-
+    # module = Module(folder)
+    # module.create_logs()
     documentator = Documentator(folder)
     documentator.to_readme(lang="en")
     documentator.to_manual()
