@@ -1,7 +1,40 @@
+"""
+Module documentator - Generates documentation for a Rocketbot module.
+
+This script assume that the package module has description field in all attributes.
+
+    Usage:
+        documentator.py [--module, -m] [--readme, -r] [--lang, -l] [--help, -h] <module>
+        
+    Options:
+        -h --help     Show this screen.
+        --version, -v     Show version.
+        --all, -a         Generate all documentation, readme and manual.
+        --module, -m      Generate documentation for a module.
+        --readme, -r      Generate readme for a module.
+        --lang, -l        Language of the documentation.
+
+    Examples:
+        documentator.py -a -m -l en /home/user/Rocketbot/modules/advancedExcel 
+        documentator.py
+
+    This file can also be imported as a module and contains the following
+    classes:
+        - Documentator: Generates documentation for a Rocketbot module.
+        - Package:      Class that represent the package file of a module.
+        - Module:       Class with funtion related with a module.
+"""
+
+__version__ = "0.1.0"
+__author__ = "Danilo Toro"
+__license__ = "MIT"
+
+
 import json
 import os
 from mdutils.mdutils import MdUtils
 import git
+import re
 
 
 LICENSES = {
@@ -32,13 +65,39 @@ LANGUAGE={
 }
 
 class Package:
+    """
+    Representation of the package file of a module.
+
+    ...
+    Attributes
+    ----------
+    all first level attributes on the package (name, version, author, etc)
+    os : list
+        list with the operative system suported
+
+    Methods
+    -------
+    get_attribute(object, name, lang="en")
+        Return the value of a property in a dict validating all type of combination
+
+    get_component_type(lang="en")
+        Return the type of component (module or addon)
+    
+    """
 
     def __init__(self, json_package: dict):
-        self.__dict__.update(json_package)
-        self.os_supported()
-        self.create_dependencies()
+        """Initialize the package.
 
-    def os_supported(self):
+        Parameters.
+        ----------
+        json_package : dict
+            dictionary with the package file read
+        """
+        self.__dict__.update(json_package)
+        self.__os_supported()
+        self.__create_dependencies()
+
+    def __os_supported(self):
         self.os = []
         if self.windows:
             self.os.append("windows")
@@ -49,44 +108,110 @@ class Package:
         if self.docker:
             self.os.append("docker")
 
-    def create_dependencies(self):
+    def __create_dependencies(self):
         for name in self.dependencies.keys():
             url = f"https://pypi.org/project/{name}/"
             self.dependencies[name] = url
         
-    def get_attribute(self, object, name, lang="en"):
+    def get_attribute(self, object, name, lang="en")->str:
+        """Return the attribute in a package object.
+
+        Objects can be:
+        - {"title":{"es": "}} 
+        - {"es":{"title": "}}        
         
+        Parameters
+        ----------
+        object : dict
+            The object where get the attribute
+        name : str
+            Name of the attribute
+        lang : str, optional
+            Language of the attribute. The default is "en".
+
+        Returns
+        -------
+        str
+            The value of the attribute. If not found, return empty str.
+        
+        """
         if lang in object:
             return object[lang][name] if name in object[lang] else ""
         if name in object and isinstance(object[name], dict):
             if lang in object[name]:
                 return object[name][lang]
+            if "en" in object[name]:
+                return object[name]["en"]
         if name in object:
             return object[name]
         return ""
 
-    def get_component_type(self, lang="en"):
+    def get_component_type(self)->str:
+        """Return the type of component (module or addon).
+
+        Returns
+        -------
+        str
+            The type of component.
+        """
         component = "module"
         if hasattr(self, "type"):
             component = self.type
-        
         return component
 
 class Documentator:
+    """
+    A class to generate the documentation of a module.
 
-    def __init__(self, module_path: str, banner_path: str=""):
+    ...
+
+    Attributes
+    ----------
+    path : str
+        Path of the module.
+    name : str
+        Name of the module.
+    package : Package
+        Package of the module represented as object.
+
+    Methods
+    -------
+    read_package()
+        Read the package file and create the package object.
+    to_readme(path_to_save="", lang="en", comment="")
+        Generate the README.md file.
+    to_manual(path_to_save="", lang="en", banner_path="")
+        Generate the manual of the module as Manual_{name}.md file.
+    
+    """
+
+    def __init__(self, module_path: str):
+        """
+        Initialize the documentator.
+
+        Parameters
+        ----------
+        module_path : str
+            Path of the module.
+        """
         self.path = module_path
         self.name = self.path.split('/')[-1]
         self.package = self.read_package()
 
     def read_package(self)->Package:
+        """Read the package file and create the package object.
+
+        Returns
+        -------
+        Package Object
+        """
         with open(self.path + "/package.json", encoding="utf8") as json_file:
             json_object= json.load(json_file)
 
         return Package(json_object)
 
-    def create_md_base(self, path_to_save: str, lang:str, banner_path: str="")->MdUtils:
-        component_type = self.package.get_component_type(lang)
+    def __create_md_base(self, path_to_save: str, lang:str, banner_path: str="")->MdUtils:
+        component_type = self.package.get_component_type()
         md_file = MdUtils(file_name=path_to_save)
         md_file.new_header(level=1, title=self.package.title[lang])
         self.add_description_module(md_file, self.package.description, lang)
@@ -100,14 +225,29 @@ class Documentator:
         md_file.new_header(level=2, title=LANGUAGE["how_to_install"][lang] + LANGUAGE[component_type][lang])
         md_file.new_line(LANGUAGE["installation"][lang](component_type))
         #How to use section
-        md_file.new_header(level=2, title=LANGUAGE["how_to_use"][lang]+ component_type)
+        md_file.new_header(level=2, title=LANGUAGE["how_to_use"][lang]+ LANGUAGE[component_type][lang])
         md_file.new_line("Eiusmod veniam ut nisi minim in. Do et deserunt eiusmod veniam sint aliqua nulla adipisicing laboris voluptate fugiat ullamco elit do. Sint amet cillum fugiat excepteur mollit voluptate reprehenderit nisi commodo sint minim.") 
         return md_file
 
     def to_readme(self, path_to_save="", lang="en", comments="")->None:
+        """Generate the README.md file.
+
+        Parameters
+        ----------
+        path_to_save : str, optional
+            Path to save the README.md file. The default is in the module path.
+        lang : str, optional
+            Language of the README.md file. The default is "en".
+        comments : str, optional
+            Comments to add at the end of the README.md file. The default is "".
+
+        Returns
+        -------
+        None
+        """
         if not path_to_save:
             path_to_save = os.path.join(self.path, "README.md")
-        md_file = self.create_md_base(path_to_save, lang)
+        md_file = self.__create_md_base(path_to_save, lang)
         md_file.new_header(level=2, title="Overview")
         if comments:
             md_file.new_paragraph(comments)
@@ -118,7 +258,7 @@ class Documentator:
             md_file.new_line(description)
         
         md_file.new_header(level=3, title="Updates")
-        self.add_updates(md_file)
+        self.__add_updates(md_file)
         md_file.new_paragraph("----")
         md_file.new_header(level=3, title="OS")
         md_file.new_list(self.package.os)
@@ -129,7 +269,7 @@ class Documentator:
         self.add_license(md_file, self.package.license)
         md_file.create_md_file()
 
-    def add_updates(self, md: MdUtils)->None:
+    def __add_updates(self, md: MdUtils)->None:
         changes_file = self.path + "/CHANGES.txt"
         if os.path.exists(changes_file):
             versions = {}
@@ -172,14 +312,24 @@ class Documentator:
         md.new_line(md.new_inline_link(url, text))
 
     def to_manual(self, path_to_save="", lang="es", banner_path=""):
-        
+        """Generate the Manual_module_name.md file.
+
+        Parameters
+        ----------
+        path_to_save : str, optional
+            Path to save the Manual_module_name.md file. The default is in the module path.
+        lang : str, optional
+            Language of the Manual_module_name.md file. The default is "es".
+        banner_path : str, optional
+            Path to the banner image. The default is in docs/imgs.
+        """
         if not path_to_save:
             path_to_save = self.create_docs_path()
-
+        
         if not banner_path:
             banner_path = "https://raw.githubusercontent.com/rocketbot-cl/{name}/master/docs/imgs/Banner_{name}.png".format(name=self.name)
 
-        md_file = self.create_md_base(path_to_save, lang, banner_path)
+        md_file = self.__create_md_base(path_to_save, lang, banner_path)
         md_file.new_header(level=2, title=LANGUAGE["overview_"+self.package.get_component_type()][lang])
         for command in self.package.children:
             title = self.package.get_attribute(command, "title", lang)
@@ -196,8 +346,81 @@ class Documentator:
             md_file.new_table(columns=3, rows=len(table)//3, text=table, text_align=None)
             self.add_command_image(md_file, command["module"], "docs")
         md_file.create_md_file()
+    
         
-    def create_docs_path(self):
+        
+class Module:
+    """Class to represent a module.
+
+    Attributes
+    ----------
+    path : str
+        Path to the module folder.
+    package : Package
+        Package object.
+    docs_path : str
+        Path to the docs folder.
+    name : str
+        Name of the module.
+
+    Methods
+    -------
+    read_package()
+        Read the package.json file and create the Package object.
+    create_docs_path()
+        Create the docs folder.
+    create_logs()
+        Create the logs file.
+
+    """
+
+    def __init__(self, path):
+        """
+        Initialize the Module object.
+
+        Parameters
+        ----------
+        path : str
+            Path to the module folder.
+        """
+        self.path = path
+        self.package = self.read_package()
+        self.name = self.package.name
+        self.create_logs()
+        self.doc_path = self.create_docs_path()
+
+    def read_package(self)->Package:
+        """Read the package file and create the package object.
+
+        Returns
+        -------
+        Package Object
+        """
+        with open(self.path + "/package.json", encoding="utf8") as json_file:
+            json_object= json.load(json_file)
+
+        return Package(json_object)
+
+    def create_logs(self):
+        """Create the logs file from git logs."""
+        repo = git.Git(self.path)
+        log_info = repo.log("--grep=hidden","--invert-grep",  "--all", "--date=local", "--pretty=format:'%ad %d %s'")
+        print(log_info)
+        exit()
+        matches = re.findall(r"\w{3} \w{3} \d\d? \d\d?:\d{2}:\d{2} \d{4}  \[.*]\s?.*",log_info, re.MULTILINE)
+        lines = "\n".join(matches)
+        print(lines)
+        # with open(self.path + "/CHANGES.txt", "w") as f:
+        #     f.write(lines)
+
+    def create_docs_path(self)->str:
+        """Create the path to the docs folder. If the folder not exists, it will be created.
+
+        Returns
+        -------
+        str
+            Path to the docs folder.
+        """
         docs_folder = os.path.join(self.path, "docs")
         if not os.path.exists(docs_folder):
             os.mkdir(docs_folder)
@@ -205,35 +428,46 @@ class Documentator:
         return os.path.join(docs_folder, f"Manual_{self.name}")
         
         
-class Module:
-
-    def __init__(self, path):
-        self.path = path
-        self.create_logs()
-
-    def create_logs(self):
-        import re
-        repo = git.Git(self.path)
-        log_info = repo.log("--invert-grep", "--grep='hidden'", "--graph", "--all", "--date=local", "--pretty=format:'%ad %d %s'")
-        matches = re.findall(r"\w{3} \w{3} \d\d? \d\d?:\d{2}:\d{2} \d{4}  \[.*]\s?.*",log_info, re.MULTILINE)
-        lines = "\n".join(matches)
-        
-        with open(self.path + "/CHANGES.txt", "w") as f:
-            f.write(lines)
-        
-        
 if __name__ == '__main__':
 
+    import sys
     from tkinter import filedialog
     from tkinter import messagebox
 
+    argv = sys.argv[1:]
+    readme = True
+    manual = True
+    lang = "es"
+    folder = argv[-1] if len(argv) > 0 else ""
 
-    folder = filedialog.askdirectory()
-    # module = Module(folder)
-    # module.create_logs()
+    if "-m" in argv or "--manual" in argv:
+        readme = False
+    if "-r" in argv or "--readme" in argv:
+        manual = False
+    if "-l" in argv:
+        lang = argv[argv.index("-l") + 1]
+    if  "--lang" in argv:
+        lang = argv[argv.index("--lang") + 1]
+
+    if "-h" in argv or "--help" in argv:
+        print(__doc__)
+        exit()
+
+    if not len(argv) or not os.path.exists(folder) or not os.path.isdir(folder):
+        folder = filedialog.askdirectory()
+
+    if not folder:
+        exit()
+    
+
+    module = Module(folder)
+    module.create_logs()
+    exit()
     documentator = Documentator(folder)
-    documentator.to_readme(lang="en")
-    documentator.to_manual()
+    if readme:
+        documentator.to_readme(lang="en")
+    if manual:
+        documentator.to_manual(lang=lang)
 
     messagebox.showinfo(message=f"README.md and Manual_{documentator.package.name}.md was created" , title="Success")
 
