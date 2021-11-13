@@ -404,12 +404,9 @@ class Module:
     def create_logs(self):
         """Create the logs file from git logs."""
         repo = git.Git(self.path)
-        log_info = repo.log("--grep=hidden","--invert-grep",  "--all", "--date=local", "--pretty=format:'%ad %d %s'")
-        print(log_info)
-        exit()
-        matches = re.findall(r"\w{3} \w{3} \d\d? \d\d?:\d{2}:\d{2} \d{4}  \[.*]\s?.*",log_info, re.MULTILINE)
-        lines = "\n".join(matches)
-        print(lines)
+        log_info = repo.log("--merges",  "--all", "--date=local", "--pretty=format:'%ad %d %s'")
+        lines = log_info.replace("(HEAD -> master) ", "")
+        print(lines, type(lines))
         # with open(self.path + "/CHANGES.txt", "w") as f:
         #     f.write(lines)
 
@@ -461,7 +458,6 @@ if __name__ == '__main__':
     
 
     module = Module(folder)
-    module.create_logs()
     exit()
     documentator = Documentator(folder)
     if readme:
