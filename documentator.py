@@ -61,6 +61,10 @@ LANGUAGE={
     },
     "overview_addon": {
         "es": "Configuración", "en": "Configuration"
+    },
+    "language": {
+        "es": "Español",
+        "en": "English"
     }
 }
 
@@ -196,25 +200,14 @@ class Documentator:
         """
         self.path = module_path
         self.name = self.path.split('/')[-1]
-        self.package = self.read_package()
-
-    def read_package(self)->Package:
-        """Read the package file and create the package object.
-
-        Returns
-        -------
-        Package Object
-        """
-        with open(self.path + "/package.json", encoding="utf8") as json_file:
-            json_object= json.load(json_file)
-
-        return Package(json_object)
+        self.module = Module(self.path)
+        self.package = self.module.package
 
     def __create_md_base(self, path_to_save: str, lang:str, banner_path: str="")->MdUtils:
         component_type = self.package.get_component_type()
         md_file = MdUtils(file_name=path_to_save)
         md_file.new_header(level=1, title=self.package.title[lang])
-        self.add_description_module(md_file, self.package.description, lang)
+        self.__add_description_module(md_file, self.package.description, lang)
 
         if banner_path:
             md_file.new_line(
@@ -224,12 +217,23 @@ class Documentator:
         #How to install section
         md_file.new_header(level=2, title=LANGUAGE["how_to_install"][lang] + LANGUAGE[component_type][lang])
         md_file.new_line(LANGUAGE["installation"][lang](component_type))
+        md_file.new_line("\n\n")
         #How to use section
-        md_file.new_header(level=2, title=LANGUAGE["how_to_use"][lang]+ LANGUAGE[component_type][lang])
-        md_file.new_line("Eiusmod veniam ut nisi minim in. Do et deserunt eiusmod veniam sint aliqua nulla adipisicing laboris voluptate fugiat ullamco elit do. Sint amet cillum fugiat excepteur mollit voluptate reprehenderit nisi commodo sint minim.") 
+        self.__add_how_to_use(md_file, lang)
         return md_file
 
-    def to_readme(self, path_to_save="", lang="en", comments="")->None:
+    def __add_how_to_use(self, md_file: MdUtils, lang: str)->MdUtils:
+        if not os.path.exists(f"{self.path}/docs/how_to_use.md"):
+            return md_file
+
+        with open(f"{self.path}/docs/how_to_use.md", "r", encoding="utf-8") as f:
+            how_to_use = f.read()
+        how_to_use = how_to_use.split("---")
+        l = ["en", "es", "pr"]
+        how_to_use = how_to_use[l.index(lang)]
+        md_file.write(how_to_use)
+            
+    def to_readme(self, path_to_save="", lang="en")->None:
         """Generate the README.md file.
 
         Parameters
@@ -238,8 +242,6 @@ class Documentator:
             Path to save the README.md file. The default is in the module path.
         lang : str, optional
             Language of the README.md file. The default is "en".
-        comments : str, optional
-            Comments to add at the end of the README.md file. The default is "".
 
         Returns
         -------
@@ -248,63 +250,67 @@ class Documentator:
         if not path_to_save:
             path_to_save = os.path.join(self.path, "README.md")
         md_file = self.__create_md_base(path_to_save, lang)
+
+        # Create description section
         md_file.new_header(level=2, title="Overview")
-        if comments:
-            md_file.new_paragraph(comments)
         for i, command in enumerate(self.package.children, start=1):
             title = self.package.get_attribute(command, "title", lang)
             description = self.package.get_attribute(command, "description", lang)
             md_file.new_paragraph(f"{i}. {title}")
             md_file.new_line(description)
         
-        md_file.new_header(level=3, title="Updates")
+        # Create updates section
+        md_file.new_line("\n\n")
         self.__add_updates(md_file)
         md_file.new_paragraph("----")
+
+        # Create Os section
         md_file.new_header(level=3, title="OS")
         md_file.new_list(self.package.os)
-        md_file.new_header(level=3, title="Dependencies")
-        self.add_dependencies(md_file, self.package.dependencies)
 
+        #Create dependencies section
+        md_file.new_header(level=3, title="Dependencies")
+        self.__add_dependencies(md_file, self.package.dependencies)
+
+        #Create license section
         md_file.new_header(level=3, title="License")
-        self.add_license(md_file, self.package.license)
+        self.__add_license(md_file, self.package.license)
+
+        # Save the file
         md_file.create_md_file()
 
     def __add_updates(self, md: MdUtils)->None:
         changes_file = self.path + "/CHANGES.txt"
         if os.path.exists(changes_file):
-            versions = {}
             with open(changes_file, 'r') as f:
-                for line in f.readlines():
-                    version = line.split(",")[0]
-                    if version not in versions:
-                        print(version)
-
-    def add_description_module(self, md: MdUtils, description: str, lang: str)->None:
+                md.new_header(level=3, title="Changes")
+                md.write(f.read())
+                    
+    def __add_description_module(self, md: MdUtils, description: str, lang: str)->None:
         if "|" not in description:
             description = description + " | " + description
 
         desc_splitted = description.split("| ")
-        if lang == "es":
-            description = desc_splitted[0]
-        if lang == "en":
-            description = desc_splitted[1]
+        l = ["es", "en", "pr"]
+        description = desc_splitted[l.index(lang)]
         md.new_line(description.strip())
         md.new_line()
 
-    def add_command_image(self, md: MdUtils, module_name: str, img_folder:str)->None:
-        image_path = f"{img_folder}/{module_name}.png"
-        if os.path.exists(self.path + "/" + image_path):
+    def __add_command_image(self, md: MdUtils, module_name: str, img_folder:str)->MdUtils:
+        image_path = os.path.join(img_folder,module_name +".png")
+        if os.path.exists(os.path.join(self.path, image_path)):
             md.new_line(
                 md.new_inline_image(module_name, image_path)
             )
+        return md
 
-    def add_dependencies(self, md: MdUtils, dependencies: dict)->None:
+    def __add_dependencies(self, md: MdUtils, dependencies: dict)->None:
         for dependencie in dependencies:
             md.write(
                 "- " + md.new_inline_link(link=dependencies[dependencie], text=dependencie, bold_italics_code='b')
             )    
 
-    def add_license(self, md: MdUtils, license:str)->None:
+    def __add_license(self, md: MdUtils, license:str)->None:
         text = license
         path = LICENSES[license]["image"]
         url = LICENSES[license]["url"]
@@ -324,12 +330,14 @@ class Documentator:
             Path to the banner image. The default is in docs/imgs.
         """
         if not path_to_save:
-            path_to_save = self.create_docs_path()
+            path_to_save = self.module.doc_path
         
         if not banner_path:
-            banner_path = "https://raw.githubusercontent.com/rocketbot-cl/{name}/master/docs/imgs/Banner_{name}.png".format(name=self.name)
+            banner_path = "/docs/imgs/Banner_{name}.png".format(name=self.name)
 
         md_file = self.__create_md_base(path_to_save, lang, banner_path)
+
+        # Create description section
         md_file.new_header(level=2, title=LANGUAGE["overview_"+self.package.get_component_type()][lang])
         for command in self.package.children:
             title = self.package.get_attribute(command, "title", lang)
@@ -344,10 +352,10 @@ class Documentator:
                     self.package.get_attribute(input, "placeholder", lang),
                 ])
             md_file.new_table(columns=3, rows=len(table)//3, text=table, text_align=None)
-            self.add_command_image(md_file, command["module"], "docs")
-        md_file.create_md_file()
-    
-        
+            self.__add_command_image(md_file, command["module"], "example")
+
+        # Save the file
+        md_file.create_md_file()   
         
 class Module:
     """Class to represent a module.
@@ -404,11 +412,12 @@ class Module:
     def create_logs(self):
         """Create the logs file from git logs."""
         repo = git.Git(self.path)
-        log_info = repo.log("--merges",  "--all", "--date=local", "--pretty=format:'%ad %d %s'")
-        lines = log_info.replace("(HEAD -> master) ", "")
-        print(lines, type(lines))
-        # with open(self.path + "/CHANGES.txt", "w") as f:
-        #     f.write(lines)
+        log_info = repo.log("--merges",  "--all", "--date=local", "--pretty=format:'%ad %d %s'").replace("(HEAD -> master) ", "").replace("'","")
+        matches = re.findall(r"\w{3} \w{3} \d\d? \d\d?:\d{2}:\d{2} \d{4}  .*[^Merge branch master]$",log_info, re.MULTILINE)
+        if matches:
+            lines = "\n".join(matches)
+            with open(self.path + "/CHANGES.txt", "w") as f:
+                f.write(lines)
 
     def create_docs_path(self)->str:
         """Create the path to the docs folder. If the folder not exists, it will be created.
@@ -435,6 +444,9 @@ if __name__ == '__main__':
     readme = True
     manual = True
     lang = "es"
+    terminal = False
+    if len(argv) > 0:
+        terminal = True
     folder = argv[-1] if len(argv) > 0 else ""
 
     if "-m" in argv or "--manual" in argv:
@@ -456,15 +468,16 @@ if __name__ == '__main__':
     if not folder:
         exit()
     
-
-    module = Module(folder)
-    exit()
     documentator = Documentator(folder)
-    if readme:
-        documentator.to_readme(lang="en")
+    # if readme:
+    #     documentator.to_readme(lang="en")
     if manual:
         documentator.to_manual(lang=lang)
 
-    messagebox.showinfo(message=f"README.md and Manual_{documentator.package.name}.md was created" , title="Success")
+    if not terminal:
+        messagebox.showinfo(message=f"README.md and Manual_{documentator.package.name}.md was created" , title="Success")
+        exit()
+    
+    print(f"README.md and Manual_{documentator.package.name}.md was created")
 
 
