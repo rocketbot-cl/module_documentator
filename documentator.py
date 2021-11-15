@@ -9,8 +9,7 @@ This script assume that the package module has description field in all attribut
     Options:
         -h --help     Show this screen.
         --version, -v     Show version.
-        --all, -a         Generate all documentation, readme and manual.
-        --module, -m      Generate documentation for a module.
+        --manual, -m      Generate documentation for a module.
         --readme, -r      Generate readme for a module.
         --lang, -l        Language of the documentation.
 
@@ -461,7 +460,9 @@ if __name__ == '__main__':
     if "-h" in argv or "--help" in argv:
         print(__doc__)
         exit()
-
+    if "-v" in argv or "--version" in argv:
+        print(__version__)
+        exit()
     if not len(argv) or not os.path.exists(folder) or not os.path.isdir(folder):
         folder = filedialog.askdirectory()
 
