@@ -1,67 +1,33 @@
+# Module documentator
 
-# Outlook365
-  
-Módulo para realizar acciones en Outlook Office 365  
+Generates documentation for a Rocketbot module.
 
-## Howto install this module
-  
-__Download__ and __install__ the content in 'modules' folder in Rocketbot path
-## How to use this module
-  
-Eiusmod veniam ut nisi minim in. Do et deserunt eiusmod veniam sint aliqua nulla adipisicing laboris voluptate fugiat 
-ullamco elit do. Sint amet cillum fugiat excepteur mollit voluptate reprehenderit nisi commodo sint minim.
-## Overview
+This script assume that the package module has description field in all attributes.
 
+### Usage:
 
-1. Server Configuration  
-Server Configuration
+```
+documentator.py [--module, -m] [--readme, -r] [--lang, -l] [--help, -h] <module>
+```
 
-2. Send Email  
-Send email, before you must configurate the server
+### Options:
 
-3. List all email  
-List all email, you can specify a filter
+```
+        -h --help     Show this screen.
+        --version, -v     Show version.
+        --manual, -m      Generate documentation for a module.
+        --readme, -r      Generate readme for a module.
+        --lang, -l        Language of the documentation.
+```
 
-4. List unread emails  
-List all unread email, you can specify a filter
+### Examples:
 
-5. Read email for ID  
-Read email for ID
+`documentator.py -a -m -l en /home/user/Rocketbot/modules/advancedExcel `
 
-6. Create Folder  
-Create Folder
+`documentator.py`
 
-7. Move email to folder  
-Move email to folder
+This file can also be imported as a module and contains the following classes:
 
-8. Reply email for ID  
-Reply email for ID
-
-9. Forward email for ID  
-Forward email for ID
-
-10. List Folders  
-List all Folders
-
-11. Mark email as unread  
-Mark email as unread
-
-12. Close Server  
-Close server connection
-### Updates
-
-
-----
-### OS
-
-- windows
-- mac
-- linux
-- docker
-
-### Dependencies
-- [**mail-parser**](https://pypi.org/project/mail-parser/)
-### License
-  
-![MIT](https://camo.githubusercontent.com/107590fac8cbd65071396bb4d04040f76cde5bde/687474703a2f2f696d672e736869656c64732e696f2f3a6c6963656e73652d6d69742d626c75652e7376673f7374796c653d666c61742d737175617265)  
-[MIT](http://opensource.org/licenses/mit-license.ph)
+- **Documentator**: Generates documentation for a Rocketbot module.
+- **Package**: Class that represent the package file of a module.
+- **Module**: Class with funtion related with a module.
