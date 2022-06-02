@@ -431,8 +431,9 @@ class Module:
             with open(self.path + "/package.json", encoding="utf8") as json_file:
                 json_object = json.load(json_file)
             return Package(json_object)
-        else:
-            raise Exception('File package.json not found!')
+        
+        # if package.json not found:
+        raise Exception('File package.json not found!')
 
 
     def create_logs(self):
@@ -479,7 +480,7 @@ if __name__ == "__main__":
     lang = "es"
     terminal = False
 
-    # Check if arguiments were passed and and inizialize the CLI interface
+    # Check if arguiments were passed and inizialize the CLI interface
     argv = sys.argv[1:]
     if len(argv) > 0:
         terminal = True
