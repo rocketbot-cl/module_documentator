@@ -485,8 +485,8 @@ if __name__ == "__main__":
         exit()
 
     documentator = Documentator(folder)
-    # if readme:
-    #     documentator.to_readme(lang="en")
+    if readme:
+        documentator.to_readme(lang="en")
     if manual:
         documentator.to_manual(lang=lang)
 
