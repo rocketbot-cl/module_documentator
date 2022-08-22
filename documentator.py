@@ -1,4 +1,4 @@
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __author__ = "Danilo Toro"
 __license__ = "MIT"
 
@@ -18,23 +18,25 @@ LICENSES = {
 }
 
 LANGUAGE = {
-    "how_to_install": {"es": "Como instalar este ", "en": "Howto install this "},
-    "how_to_use": {"es": "Como usar este ", "en": "How to use this "},
-    "module": {"es": "módulo", "en": "module"},
-    "options": {"es": "Opciones", "en": "Options"},
-    "parameters": {"es": "Parámetros", "en": "Parameters"},
-    "description": {"es": "Descripción", "en": "Description"},
-    "example": {"es": "ejemplo", "en": "example"},
+    "how_to_install": {"es": "Como instalar este ", "en": "How to install this ", "pr": "Como instalar este "},
+    "how_to_use": {"es": "Como usar este ", "en": "How to use this ", "pr": "Como usar este "},
+    "module": {"es": "módulo", "en": "module", "pr": "módulo"},
+    "options": {"es": "Opciones", "en": "Options", "pr": "Opções"},
+    "parameters": {"es": "Parámetros", "en": "Parameters", "pr": "Parâmetros"},
+    "description": {"es": "Descripción", "en": "Description", "pr": "Descrição"},
+    "example": {"es": "ejemplo", "en": "example", "pr": "exemplo"},
     "installation": {
-        "es": lambda folder: f"__Descarga__ e __instala__ el contenido en la carpeta '{folder}s' en la ruta de rocketbot.",
+        "es": lambda folder: f"__Descarga__ e __instala__ el contenido en la carpeta '{folder}s' en la ruta de Rocketbot.",
         "en": lambda folder: f"__Download__ and __install__ the content in '{folder}s' folder in Rocketbot path",
+        "pr": lambda folder: f"__Baixe__ e __instale__ o conteúdo na pasta '{folder}s' no caminho do Rocketbot",
     },
     "overview_module": {
         "es": "Descripción de los comandos",
         "en": "Description of the commands",
+        "pr": "Descrição do comando",
     },
-    "overview_addon": {"es": "Configuración", "en": "Configuration"},
-    "language": {"es": "Español", "en": "English"},
+    "overview_addon": {"es": "Configuración", "en": "Configuration", "pr": "configuração"},
+    "language": {"es": "Español", "en": "English", "pr": "Portugues"},
 }
 
 
@@ -268,7 +270,7 @@ class Documentator:
 
         desc_splitted = description.split("| ")
         l = ["es", "en", "pr"]
-        description = desc_splitted[l.index(lang)]
+        description = desc_splitted[l.index(lang) -1]
         md.new_line(description.strip())
         md.new_line()
 
@@ -485,8 +487,8 @@ if __name__ == "__main__":
         exit()
 
     documentator = Documentator(folder)
-    # if readme:
-    #     documentator.to_readme(lang="en")
+    if readme:
+        documentator.to_readme(lang=lang)
     if manual:
         documentator.to_manual(lang=lang)
 
